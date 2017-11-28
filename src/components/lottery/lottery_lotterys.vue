@@ -4,7 +4,7 @@
 			<button class="btn">登录/注册</button>
 			<p>登录查看我的积分</p>
 		</div>
-		<p class="integral">当前积分：<span>300</span></p>
+		<p class="integral">当前积分：<span v-model="sumCount">{{sumCount}}</span></p>
 		<div class="lottery-box">
 			<div class="lottery-top">
 				<span :class="{ 'on': isShow }" v-on:click="lottery1()">抽iPhone8</span>
@@ -19,7 +19,7 @@
 			        </tr>
 			        <tr>
 			            <td class="lottery-unit lottery-unit-7"><img src="../../image/%3.png" class="sapce spa"><div class="mask spa"></div></td>
-			            <td class="btn sapce"><img src="../../image/start.png"class="sapce spa"></td>
+			            <td class="btn sapce" v-on:click="runs()"><img src="../../image/start.png"class="sapce spa"></td>
 			            <td class="lottery-unit lottery-unit-3"><img src="../../image/268.png" class="spa"><div class="mask spa"></div></td>
 			        </tr>
 			        <tr>
@@ -38,7 +38,7 @@
 			        </tr>
 			        <tr>
 			            <td class="lottery-unit lottery-unit-7"><img src="../../image/688fen.png" class="sapce spa"><div class="mask spa"></div></td>
-			            <td class="btn sapce"><img src="../../image/fenstart.png"class="sapce spa"></td>
+			            <td class="btn sapce" v-on:click="move()"><img src="../../image/fenstart.png"class="sapce spa"></td>
 			            <td class="lottery-unit lottery-unit-3"><img src="../../image/36fen.png" class="spa"><div class="mask spa"></div></td>
 			        </tr>
 			        <tr>
@@ -53,10 +53,12 @@
 	</div>
 </template>
 <script type="text/ecmascript-6">
+	import lottery from '../../util/lottery/index.js'
 	export default {
 		data () {
 			return {
-				isShow: true
+				isShow: true,
+				sumCount: '10'
 			}
 		},
 		methods: {
@@ -65,8 +67,37 @@
 			},
 			lottery2: function () {
 				this.isShow = false
+			},
+			runs: function () {
+				if (lottery.click) {
+					return false
+				} else {
+					if (this.sumCount < 100) {
+						alert('积分不足')
+						return false
+					} else {
+						lottery.init('lottery1')
+						this.sumCount = this.sumCount - 10
+						lottery.getLottery()
+						return false
+					}
+				}
+			},
+			move: function() {
+				if (lottery.click) {
+					return false
+				} else {
+					if (this.sumCount < 10) {
+						alert('积分不足')
+						return false
+					} else {
+						lottery.init('lottery2')
+						this.sumCount = this.sumCount - 10
+						lottery.getLottery()
+						return false
+					}
+				}
 			}
-
 		}
 	}
 </script>
@@ -125,6 +156,7 @@
 					font-size:.28rem
 					color:#ff5425
 					line-height:.8rem
+					cursor:pointer
 			.lotterys
 				width: 6.39rem
 				height: 7.26rem

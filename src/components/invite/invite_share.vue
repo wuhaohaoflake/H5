@@ -8,40 +8,32 @@
 			<p>您的好友<span>189***3243</span>喊您来拓道领红包啦!</p>
 		</div>
 		<div class="talk"></div>
-<<<<<<< HEAD
-		<div class="phone"><input type="tel" placeholder="请输入手机号码"></div>
-		<ul class="register">
+		<div class="wrongs" v-show="isShow">{{tsShow}}</div>
+		<input type="tel" class="phone" v-model="telphone" maxlength="11" placeholder="请输入手机号码">
+		<ul class="register" v-show="register">
 			<li>
-				<div class="yzm"><input type="text" placeholder="请输入验证码"></div>
-				<div class="anniu"></div>
+				<div class="yzm"><input type="text" v-model="yzm" placeholder="请输入验证码"></div>
+				<div class="anniu" v-on:click="send()">
+					<span v-if="sendMsgDisabled">{{time+'秒后重新获取'}}</span>
+  					<span v-if="!sendMsgDisabled">请重新获取</span>
+					</div>
 			</li>
-			<li></li>
+			<li>
+				<input type="password" v-model="pas" placeholder="请设置6-16位登录密码" class="password" maxlength="16">
+			</li>
 		</ul>
-=======
-		<div class="phone"><input type="number" placeholder="请输入手机号码"></div>
->>>>>>> 9bccecae0560648375b6a27a14b83e11bfe72d65
-		<div class="btn">领取<span>398</span>元红包</div>
+		<div class="success-box" v-show="status"><img src="../../image/invites_suc.png"></div>
+		<div class="btn" v-show="!register" v-on:click="telphones()">领取<span>398</span>元红包</div>
+		<div class="btn" v-show="register" v-on:click="code()">领取<span>398</span>元红包</div>
 		<div class="foot-box">
 			<div class="line-one">
-				<div class="pic"></div>
-				<div class="font">
-					<p class="til">实力雄厚</p>
-					<p class="content">互联网金融百强企业</p>
-				</div>
+				<img src="../../image/shili.png">
 			</div>
 			<div class="line-two">
-				<div class="pic"></div>
-				<div class="font">
-					<p class="til">三年品牌</p>
-					<p class="content">靠谱的金融理财平台</p>
-				</div>
+				<img src="../../image/pinpai.png">
 			</div>
 			<div class="line-three">
-				<div class="pic"></div>
-				<div class="font">
-					<p class="til">安全保障</p>
-					<p class="content">100%抵押质押保障<br> 资金由北京银行存管</p>
-				</div>
+				<img src="../../image/anquan.png">
 			</div>
 			<div class="address">
 				<p>客服电话：4008-365-078</p>
@@ -51,20 +43,67 @@
 	</div>
 </template>
 <script type="text/ecmascript-6">
+	export default {
+		data () {
+			return {
+				telphone: '',
+				yzm: '',
+				pas: '',
+				tsShow: '',
+				isShow: false,
+				status: false,
+				register: false,
+				time: 60,
+				sendMsgDisabled: false
+			}
+		},
+		methods: {
+			telphones () {
+				if (!(/^1[34578]\d{9}$/.test(this.telphone))) {
+					this.tsShow = '请输入正确的手机号码'
+					this.isShow = true
+				} else {
+					this.register = true
+					this.isShow = false
+					if (this.sendMsgDisabled === false) {
+						this.send()
+					}
+				}
+			},
+			send () {
+				let me = this
+				if (me.sendMsgDisabled === false) {
+					me.sendMsgDisabled = true
+					let interval = window.setInterval(function() {
+						if ((me.time--) <= 0) {
+							me.time = 60
+							me.sendMsgDisabled = false
+							window.clearInterval(interval)
+						}
+					}, 1000)
+				}
+			},
+			code () {
+				if (this.yzm === '') {
+					this.tsShow = '请输入验证码'
+					this.isShow = true
+				}
+			}
+		}
+	}
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
 @import "~common/stylus/variable"
+.dis_none
+	display:none
 .share-page
-<<<<<<< HEAD
 	max-width: 414px
 	background-color #fdb418
 	overflow:hidden
 	margin: 0 auto
-=======
-	background-color #fdb418
-	overflow:hidden
->>>>>>> 9bccecae0560648375b6a27a14b83e11bfe72d65
+	text-align:center;
+	line-height:0
 	.logo
 		width:1.25rem
 		height:.59rem
@@ -78,12 +117,8 @@
 		background-size: 100%
 		overflow:hidden
 		position:absolute
-<<<<<<< HEAD
 		left:50%
 		margin-left:-3.39rem
-=======
-		left:.4rem
->>>>>>> 9bccecae0560648375b6a27a14b83e11bfe72d65
 	.bg-pic
 		width:7.5rem
 		height:5.16rem
@@ -91,12 +126,8 @@
 		background-size: 100%
 		overflow:hidden
 	.gg
-<<<<<<< HEAD
 		width:6.75rem;
 		margin:.35rem auto .25rem auto
-=======
-		margin:.35rem .6rem .25rem .4rem
->>>>>>> 9bccecae0560648375b6a27a14b83e11bfe72d65
 		height:.76rem
 		line-height:.76rem
 		overflow:hidden
@@ -115,38 +146,61 @@
 		height:1.6rem
 		background:url('../../image/talk.png') no-repeat
 		background-size: 100%
+		margin: 0 auto .5rem auto
+	.wrongs
+		width:6.7rem
 		margin: 0 auto
+		font-size:.28rem
+		color:red
+		text-align:left
+		line-height:.5rem
 	.phone
-		overflow:hidden
-<<<<<<< HEAD
-		text-align:center;
-=======
-		margin-left:.4rem
->>>>>>> 9bccecae0560648375b6a27a14b83e11bfe72d65
-		input
-			width:6.33rem
-			height:.89rem
-			border-radius:.1rem
-			padding-left:.37rem
-			font-size:.28rem
-			color:#777777
-			outline:none
-<<<<<<< HEAD
+		width:6.33rem
+		height:.89rem
+		border-radius:.1rem
+		padding-left:.37rem
+		font-size:.28rem
+		color:#777777
+		outline:none
 	.register
+		width:6.7rem
+		margin: 0 auto
 		li
-			width:6.33rem
-			height:.89rem
+			overflow:hidden
+			margin-top:.3rem
 			.yzm
-				width:60%
+				width:4rem
+				float:left
 				input
-					width:100%
-					height:.89rem
+					width:3.63rem
+					height:.88rem
 					font-size:.28rem
 					border-radius:.1rem
 					padding-left:.37rem
-=======
-
->>>>>>> 9bccecae0560648375b6a27a14b83e11bfe72d65
+					outline:none
+			.anniu
+				width:2.5rem
+				height:.88rem
+				line-height:.88rem
+				color:#fff
+				background-color #f22939
+				font-size:.28rem
+				text-align:center
+				border-radius:.1rem
+				float:left
+				margin:0 0 0 .2rem
+			.password
+				width:6.33rem
+				height:.89rem
+				border-radius:.1rem
+				padding-left:.37rem
+				font-size:.28rem
+				color:#777777
+				outline:none
+	.success-box
+		margin-top:.5rem
+		img
+			width:100%
 	.btn
 		width:6.7rem
 		height:.89rem
@@ -166,70 +220,21 @@
 			height:1.1rem
 			margin:.5rem auto .38rem auto
 			vertical-align:middle
-			.pic
-				width:1.11rem
-				height:1.1rem
-				background:url('../../image/sl.png') no-repeat
-				background-size: 100%
-				margin-right:.35rem
-				float:left
-			.font
-				float:left
-				margin-top:.15rem
-				.til
-					font-weight:800
-					font-size:.32rem
-					color:#333333
-					margin-bottom:.19rem
-				.content
-					font-size:.28rem
-					color:#333333
+			img
+				width:100%
 		.line-two
 			width:3.98rem
 			height:1.1rem
 			margin:0 auto .38rem auto
 			vertical-align:middle
-			.pic
-				width:1.11rem
-				height:1.1rem
-				background:url('../../image/pp.png') no-repeat
-				background-size: 100%
-				margin-right:.35rem
-				float:left
-			.font
-				float:left
-				margin-top:.15rem
-				.til
-					font-weight:800
-					font-size:.32rem
-					color:#333333
-					margin-bottom:.19rem
-				.content
-					font-size:.28rem
-					color:#333333
+			img
+				width:100%
 		.line-three
 			width:3.98rem
 			height:1.15rem
 			margin:0 auto .65rem auto
-			vertical-align:middle
-			.pic
-				width:1.11rem
-				height:1.1rem
-				background:url('../../image/safe.png') no-repeat
-				background-size: 100%
-				margin-right:.35rem
-				float:left
-			.font
-				float:left
-				.til
-					font-weight:800
-					font-size:.32rem
-					color:#333333
-					margin-bottom:.19rem
-				.content
-					font-size:.28rem
-					color:#333333
-					line-height:.35rem
+			img
+				width:100%
 		.address
 			text-align:center
 			p

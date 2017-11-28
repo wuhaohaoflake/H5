@@ -5,7 +5,6 @@ import demo2 from 'components/demo2/demo2'
 import demo3 from 'components/demo3/demo3'
 import demo4 from 'components/demo4/demo4'
 import share from 'components/invite/invite_share'
-<<<<<<< HEAD
 import rule from 'components/invite/invite_rule'
 import friends from 'components/invite/invite_friends'
 import record from 'components/invite/invite_record'
@@ -72,29 +71,4 @@ export default new Router({
 		path: '/prize',
 		component: prize
 	}]
-=======
-
-Vue.use(Router)
-
-export default new Router({
-  routes: [{
-    path: '/',
-    redirect: '/share'
-  }, {
-    path: '/demo1',
-    component: demo1
-  }, {
-    path: '/demo2',
-    component: demo2
-  }, {
-    path: '/demo3',
-    component: demo3
-  }, {
-    path: '/demo4',
-    component: demo4
-  }, {
-    path: '/share',
-    component: share
-  }]
->>>>>>> 9bccecae0560648375b6a27a14b83e11bfe72d65
 })
