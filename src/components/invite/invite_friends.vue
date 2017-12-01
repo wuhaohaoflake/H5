@@ -1,16 +1,16 @@
 <template lang="html">
 	<div class="invite">
-		<div class="login-box">
-			<button class="btn">登录/注册</button>
+		<div class="login-box" v-show="isLogin">
+			<button class="btn" v-on:click="login()">登录/注册</button>
 			<p>登录查看我的邀请等级</p>
 		</div>
-		<div class="low-box">
+		<div class="low-box" v-show="isLow">
 			<p>距中级理财师还差2个v1好友，200万待收金额</p>
 		</div>
-		<div class="middle-box">
+		<div class="middle-box" v-show="isMiddle">
 			<p>距王牌理财师还差3个v1好友，100万待收金额</p>
 		</div>
-		<div class="king-box"></div>
+		<div class="king-box" v-show="isKing"></div>
 		<div class="banner-box"></div>
 		<div class="info-box">
 			<p class="title">好友首次投资，您将获得</p>
@@ -19,14 +19,108 @@
 			<div class="sec"></div>
 		</div>
 		<div class="rule">
-			<a href="">查看邀请规则&nbsp;></a>
+			<router-link to="/rule">
+				<a href="">查看邀请规则&nbsp;></a>
+			</router-link>
 		</div>
-		<button class="invite-btn">立即邀请</button>
+		<button class="invite-btn" v-on:click="invite()">立即邀请</button>
 	</div>
 </template>
 
 <script type="text/ecmascript-6">
-	export default {
+	export default{
+		data () {
+			return {
+				apiUrl: 'http://72.127.2.140:8080/api/router/app/h5/invite/inviteFriend',
+				ShareUrl: 'http://72.127.2.140:8080/api/router/app/h5/invite/inviteShare',
+				isLogin: false,
+				isLow: false,
+				isMiddle: false,
+				isKing: false,
+				isOpenDeposit: '',
+				loginStatus: 0
+			}
+		},
+		mounted() {
+			this.init()
+		},
+		methods: {
+			init() {
+				let vm = this
+				if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+					vm.setupWebViewJavascriptBridge(function (bridge) {
+						bridge.callHandler('h5ToNative_GetUserInfo', {}, function (response) {
+							vm.loginStatus = response.status
+						})
+					})
+				}
+				vm.$http.post(vm.apiUrl)
+					.then((response) => {
+						vm.isOpenDeposit = response.body.content.isOpenDeposit
+						if (vm.loginStatus === 0) {
+							this.isLogin = true
+						} else {
+							if (response.body.content.financialPlannerLevel === 1) {
+								vm.isLow = true
+							} else if (response.body.content.financialPlannerLevel === 2) {
+								vm.isMiddle = true
+							} else if (response.body.content.financialPlannerLevel === 3) {
+								vm.isKing = true
+							}
+						}
+					})
+			},
+			invite() {
+				if (this.isOpenDeposit === 0) {
+					if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+						this.setupWebViewJavascriptBridge(function (bridge) {
+							bridge.callHandler('h5ToNative_ShowOpenDepositAlert', {}, function (response) {
+							})
+						})
+					}
+				} else {
+					this.$http.post(this.ShareUrl)
+						.then((response) => {
+							console.log(response)
+							if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+								this.setupWebViewJavascriptBridge(function (bridge) {
+									bridge.callHandler('h5ToNative_ShowShareView', {
+										'url': response.body.content.url,
+										'title': response.body.content.title,
+										'iconUrl': response.body.content.iconUrl,
+										'content': response.body.content.content,
+										'inviteCode': response.body.content.inviteCode
+									}, function (response) {
+									})
+								})
+							}
+						})
+				}
+			},
+			setupWebViewJavascriptBridge(callback) {
+				if (window.WebViewJavascriptBridge) {
+					return callback(window.WebViewJavascriptBridge)
+				}
+				if (window.WVJBCallbacks) {
+					return window.WVJBCallbacks.push(callback)
+				}
+				window.WVJBCallbacks = [callback]
+				let WVJBIframe = document.createElement('iframe')
+				WVJBIframe.style.display = 'none'
+				WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__'
+				document.documentElement.appendChild(WVJBIframe)
+				setTimeout(function () {
+					document.documentElement.removeChild(WVJBIframe)
+				}, 0)
+			},
+			login() {
+				if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+					this.setupWebViewJavascriptBridge(function (bridge) {
+						bridge.callHandler('h5ToNative_Login', {}, function (response) {})
+					})
+				}
+			}
+		}
 	}
 </script>
 
@@ -57,12 +151,11 @@
 		.low-box
 			width:6.9rem
 			height:3rem
-			background:url(../../image/low.png) no-repeat
+			background:url(../../image/invite/low.png) no-repeat
 			background-size: 100% 100%;
 			margin: .5rem auto
 			text-align:center
 			overflow:hidden
-			display:none
 			p
 				font-size:.24rem
 				margin-top:2.18rem
@@ -71,12 +164,11 @@
 		.middle-box
 			width:6.9rem
 			height:3rem
-			background:url(../../image/middle.png) no-repeat
+			background:url(../../image/invite/middle.png) no-repeat
 			background-size: 100% 100%;
 			margin: .5rem auto
 			text-align:center
 			overflow:hidden
-			display:none
 			p
 				font-size:.24rem
 				color:#b6b5b6
@@ -84,16 +176,15 @@
 		.king-box
 			width:6.9rem
 			height:3rem
-			background:url(../../image/king.png) no-repeat
+			background:url(../../image/invite/king.png) no-repeat
 			background-size: 100% 100%;
 			margin: .5rem auto
 			text-align:center
 			overflow:hidden
-			display:none
 		.banner-box
 			width:6.9rem
 			height:1.4rem
-			background:url(../../image/banner-1.png) no-repeat
+			background:url(../../image/invite/banner-1.png) no-repeat
 			background-size: 100%;
 			margin:0 auto
 		.info-box
@@ -110,7 +201,8 @@
 			.sec
 				width:6.04rem
 				height:6.61rem
-				background:url(../../image/sec.png) no-repeat
+				margin-top:.6rem
+				background:url(../../image/invite/sec.png) no-repeat
 				background-size: 100%;
 		.rule
 			height:1.25rem

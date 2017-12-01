@@ -24,8 +24,7 @@ module.exports = {
 	alias: {
 	  '@': resolve('src'),
 	  'common': resolve('src/common'),
-	  'components': resolve('src/components'),
-	  'jquery': 'jquery'
+	  'components': resolve('src/components')
 	}
   },
   module: {
@@ -66,15 +65,6 @@ module.exports = {
 		}
 	  }
 	]
-  },
-  plugins: [
-// 3. 配置全局使用 jquery
-	new webpack.ProvidePlugin({
-		$: 'jquery',
-		jQuery: 'jquery',
-		jquery: 'jquery',
-		'window.jQuery': 'jquery'
-	})
- ]
+  }
 }
 

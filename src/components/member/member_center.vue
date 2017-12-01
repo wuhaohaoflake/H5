@@ -1,6 +1,6 @@
 <template>
 	<div class="center">
-		<div class="login-bg dis_none">
+		<div class="login-bg" v-if="isLogin">
 			<button class="btn">登录/注册</button>
 			<p>登录后查看您的会员等级</p>
 			<div class="numbers">
@@ -13,22 +13,22 @@
 				<div class="left">本月日均资产 <span>0.00</span> 元</div><div class="right">距离V1等级还差 <span>0</span> 元</div>
 			</div>
 		</div>
-		<div class="member-bg">
-			<p class="welcome">Hi，<span>150****1234</span></p>
-			<div class="logo"></div>
-			<p class="day-money">上月日均资产:<span>20</span>元</p>
+		<div class="member-bg" v-else>
+			<p class="welcome">Hi，<span>{{mobile}}</span></p>
+			<div class="logo"><img :src="now"></div>
+			<p class="day-money">上月日均资产:<span>{{lastMonthAvg}}</span>元</p>
 			<div class="numbers">
-				<span class="bg">0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+				<span :class="{ 'bg': v === 0 }">0</span><span :class="{ 'bg': v === 1 }">1</span><span :class="{ 'bg': v === 2 }">2</span><span :class="{ 'bg': v === 3 }">3</span><span :class="{ 'bg': v === 4 }">4</span><span :class="{ 'bg': v === 5 }">5</span><span :class="{ 'bg': v === 6 }">6</span>
 			</div>
-			<div class="lines">
+			<div class="lines" id="lines">
 				<span class="line"></span><span class="line"></span><span class="line"></span><span class="line"></span><span class="line"></span><span class="line"></span>
 			</div>
 			<div class="info">
-				<div class="left">本月日均资产 <span>0.00</span> 元</div><div class="right">距离V1等级还差 <span>0</span> 元</div>
+				<div class="left">本月日均资产 <span>{{thisMonthAvg}}</span> 元</div><div class="right">距离V1等级还差 <span>{{distanceNextLevelAmount}}</span> 元</div>
 			</div>
 		</div>
 		<p class="title">当前等级特权</p>
-		<div class="class-privilege">
+		<div class="class-privilege" id="privilege">
 			<div class="box">
 				<div class="logo iconfont">&#xe6b5;</div>
 				<div class="font">免费提现</div>
@@ -46,24 +46,114 @@
 				<div class="font">升级大礼包</div>
 			</div>
 		</div>
-		<a href="" class="about-privilege"><p>了解等级特权</p><span class="iconfont">&#xe6b8;</span></a>
+		<router-link to="/privilege">
+			<a href="" class="about-privilege"><p>了解等级特权</p><span class="iconfont">&#xe6b8;</span></a>
+		</router-link>
 	</div>
 </template>
-<script type="text/ecmascript-6"></script>
+<script type="text/ecmascript-6">
+	export default{
+		data () {
+			return {
+				now: require('../../image/member/v0.png'),
+				apiUrl: 'http://72.127.2.140:8080/api/router/app/h5/vipCenter/getUserVipData',
+				mobile: '',
+				lastMonthAvg: '',
+				thisMonthAvg: '',
+				distanceNextLevelAmount: '',
+				v: '',
+				loginStatus: '',
+				isLogin: false
+			}
+		},
+		mounted() {
+			this.init()
+		},
+		methods: {
+			init() {
+				let vm = this
+				if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+					vm.setupWebViewJavascriptBridge(function (bridge) {
+						bridge.callHandler('h5ToNative_GetUserInfo', {}, function (response) {
+							vm.loginStatus = response.status
+						})
+					})
+				}
+				if (vm.loginStatus === 0) {
+					vm.isLogin = true
+				} else {
+					vm.$http.post(vm.apiUrl)
+						.then((response) => {
+							console.log(response.body.content)
+							vm.mobile = response.body.content.mobile
+							vm.lastMonthAvg = response.body.content.lastMonthAvg
+							vm.thisMonthAvg = response.body.content.thisMonthAvg
+							vm.distanceNextLevelAmount = response.body.content.distanceNextLevelAmount
+							vm.v = response.body.content.vipLevel
+							let _lines = document.getElementById('lines')
+							let _privilege = document.getElementById('privilege')
+							let liss = _privilege.getElementsByClassName('logo')
+							let lis = _lines.getElementsByClassName('line')
+							// vm.v = 1
+							for (var i = 0; i < vm.v; i++) {
+								lis[i].classList.add('white')
+							}
+							for (var j = 0; j < vm.v + 1; j++) {
+								liss[j].classList.add('light')
+							}
+							if (vm.v === 0) {
+								vm.now = require('../../image/member/v0.png')
+							} else if (vm.v === 1) {
+								vm.now = require('../../image/member/v1.png')
+							} else if (vm.v === 2) {
+								vm.now = require('../../image/member/v2.png')
+							} else if (vm.v === 3) {
+								vm.now = require('../../image/member/v3.png')
+							} else if (vm.v === 4) {
+								vm.now = require('../../image/member/v4.png')
+							} else if (vm.v === 5) {
+								vm.now = require('../../image/member/v5.png')
+							} else {
+								vm.now = require('../../image/member/v6.png')
+							}
+						})
+				}
+			},
+			setupWebViewJavascriptBridge(callback) {
+				if (window.WebViewJavascriptBridge) {
+					return callback(window.WebViewJavascriptBridge)
+				}
+				if (window.WVJBCallbacks) {
+					return window.WVJBCallbacks.push(callback)
+				}
+				window.WVJBCallbacks = [callback]
+				let WVJBIframe = document.createElement('iframe')
+				WVJBIframe.style.display = 'none'
+				WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__'
+				document.documentElement.appendChild(WVJBIframe)
+				setTimeout(function () {
+					document.documentElement.removeChild(WVJBIframe)
+				}, 0)
+			}
+		}
+	}
+</script>
 <style scoped lang="stylus" rel="stylesheet/stylus">
 	@import "~common/stylus/variable"
-	.dis_none
-		display:none
 	.bg
-		background:url(../../image/icon-bg.png) no-repeat
+		background:url(../../image/member/icon-bg.png) no-repeat
 		background-size:100%
 		color:#ff9600
+	.white
+		background-color #fff!important
+	.light
+		color:#ff7400!important
 	.center
 		max-width:414px
 		margin: 0 auto
 		.login-bg
 			height:4.05rem
-			background:url(../../image/member1.png) no-repeat
+			background:url(../../image/member/member1.png) no-repeat
 			background-size:100%
 			text-align:center
 			margin-bottom:.19rem
@@ -133,7 +223,7 @@
 						color:#fff
 		.member-bg
 			height:4.05rem
-			background:url(../../image/member1.png) no-repeat
+			background:url(../../image/member/member1.png) no-repeat
 			background-size:100%
 			text-align:center
 			overflow:hidden
@@ -145,9 +235,10 @@
 			.logo
 				width:.61rem
 				height:.55rem
-				background:url(../../image/v0.png) no-repeat
-				background-size:100%
+				line-height:0
 				margin: 0.25rem auto .20rem auto
+				img
+					width:100%
 			.day-money
 				font-size:.24rem
 				color:#ffd9b8

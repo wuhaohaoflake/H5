@@ -36,6 +36,6 @@
 				margin:.3rem auto .61rem auto
 				width:6.9rem
 				height:3.21rem
-				background:url(../../image/table-c.png) no-repeat
+				background:url(../../image/invite/table-c.png) no-repeat
 				background-size: 100% 100%;
 </style>

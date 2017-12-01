@@ -6,84 +6,36 @@
 				<th>账户资产（上月日均）</th>
 				<th>特权</th>
 			</tr>
-			<tr>
-				<td>V0</td>
-				<td>0-5万</td>
-				<td>免费提现次数*1</td>
-			</tr>
-			<tr>
-				<td>V1</td>
-				<td>5-10万</td>
-				<td>
-					免费提现次数*2 <br>
-					10元抵扣券*1 <br>
-					50元抵扣券*2 <br>
-					1%加息券*3 <br>
-					2%加息券*1
-				</td>
-			</tr>
-			<tr>
-				<td>V2</td>
-				<td>10-30万</td>
-				<td>
-					免费提现次数*3 <br>
-					20元抵扣券*1 <br>
-					50元抵扣券*1  <br>
-					80元抵扣券*1  <br>
-					1%加息券*1 <br>
-					2%加息券*2
-				</td>
-			</tr>
-			<tr>
-				<td>V3</td>
-				<td>30-50万</td>
-				<td>
-					免费提现次数*5 <br>
-					30元抵扣券*1 <br>
-					80元抵扣券*2  <br>
-					1%加息券*2 <br>
-					2%加息券*3
-				</td>
-			</tr>
-			<tr>
-				<td>V4</td>
-				<td>50-100万</td>
-				<td>
-					免费提现次数*6 <br>
-					30元抵扣券*1 <br>
-					80元抵扣券*1  <br>
-					100元抵扣券*1  <br>
-					2%加息券*3 <br>
-					3%加息券*1
-				</td>
-			</tr>
-			<tr>
-				<td>V5</td>
-				<td>100-500万</td>
-				<td>
-					免费提现次数*6 <br>
-					50元抵扣券*1 <br>
-					100元抵扣券*2  <br>
-					1%加息券*1 <br>
-					2%加息券*3 <br>
-					3%加息券*1
-				</td>
-			</tr>
-			<tr>
-				<td>V6</td>
-				<td>≥500万</td>
-				<td>
-					免费提现次数*6 <br>
-					100元抵扣券*3 <br>
-					1%加息券*2 <br>
-					2%加息券*3 <br>
-					3%加息券*1
-				</td>
+			<tr v-for="item in items">
+				<td>{{item.vipLevel}}</td>
+				<td>{{item.accountFund}}</td>
+				<td><span v-for="value in item.privileges">{{value}}<br></span></td>
 			</tr>
 		</table>
 	</div>
 </template>
-<script type="text/ecmascript-6"></script>
+<script type="text/ecmascript-6">
+	export default{
+		data () {
+			return {
+				apiUrl: 'http://72.127.2.140:8080/api/router/app/h5/vipCenter/getVipWelfareList',
+				items: []
+			}
+		},
+		mounted() {
+			this.init()
+		},
+		methods: {
+			init() {
+				let vm = this
+				vm.$http.post(vm.apiUrl)
+					.then((response) => {
+						this.items = response.body.content
+					})
+			}
+		}
+	}
+</script>
 <style scoped lang="stylus" rel="stylesheet/stylus">
 	@import "~common/stylus/variable"
 	.privilege

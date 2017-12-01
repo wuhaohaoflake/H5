@@ -5,7 +5,7 @@
 		<div class="bg-pic"></div>
 		<div class="gg">
 			<div class="lb"></div>
-			<p>您的好友<span>189***3243</span>喊您来拓道领红包啦!</p>
+			<p>您的好友<span v-model="invitePhone">{{invitePhone}}</span>喊您来拓道领红包啦!</p>
 		</div>
 		<div class="talk"></div>
 		<div class="wrongs" v-show="isShow">{{tsShow}}</div>
@@ -22,18 +22,18 @@
 				<input type="password" v-model="pas" placeholder="请设置6-16位登录密码" class="password" maxlength="16">
 			</li>
 		</ul>
-		<div class="success-box" v-show="status"><img src="../../image/invites_suc.png"></div>
+		<div class="success-box" v-show="status"><img src="../../image/invite/invites_suc.png"></div>
 		<div class="btn" v-show="!register" v-on:click="telphones()">领取<span>398</span>元红包</div>
 		<div class="btn" v-show="register" v-on:click="code()">领取<span>398</span>元红包</div>
 		<div class="foot-box">
 			<div class="line-one">
-				<img src="../../image/shili.png">
+				<img src="../../image/invite/shili.png">
 			</div>
 			<div class="line-two">
-				<img src="../../image/pinpai.png">
+				<img src="../../image/invite/pinpai.png">
 			</div>
 			<div class="line-three">
-				<img src="../../image/anquan.png">
+				<img src="../../image/invite/anquan.png">
 			</div>
 			<div class="address">
 				<p>客服电话：4008-365-078</p>
@@ -43,6 +43,7 @@
 	</div>
 </template>
 <script type="text/ecmascript-6">
+	import md5 from 'js-md5'
 	export default {
 		data () {
 			return {
@@ -53,8 +54,13 @@
 				isShow: false,
 				status: false,
 				register: false,
+				pwSecurityLevel: '',
 				time: 60,
-				sendMsgDisabled: false
+				sendMsgDisabled: false,
+				invitePhone: '17557280731',
+				apiUrl: 'http://72.127.2.140:8080/api/router/app/loginAbout/mobileState',
+				resgistUrl: 'http://72.127.2.140:8080/api/router/app/h5/invite/register',
+				smsSendUrl: 'http://72.127.2.140:8080/api/router/app/loginAbout/smsSend'
 			}
 		},
 		methods: {
@@ -63,31 +69,79 @@
 					this.tsShow = '请输入正确的手机号码'
 					this.isShow = true
 				} else {
-					this.register = true
-					this.isShow = false
-					if (this.sendMsgDisabled === false) {
-						this.send()
-					}
+					this.check()
 				}
 			},
 			send () {
 				let me = this
 				if (me.sendMsgDisabled === false) {
 					me.sendMsgDisabled = true
-					let interval = window.setInterval(function() {
-						if ((me.time--) <= 0) {
-							me.time = 60
-							me.sendMsgDisabled = false
-							window.clearInterval(interval)
-						}
-					}, 1000)
+					me.$http.post(me.smsSendUrl, {'mobile': me.telphone, 'smsType': 'register'}, {emulateJSON: true})
+						.then((response) => {
+							let interval = window.setInterval(function() {
+								if ((me.time--) <= 0) {
+									me.time = 60
+									me.sendMsgDisabled = false
+									window.clearInterval(interval)
+								}
+							}, 1000)
+						})
 				}
 			},
 			code () {
 				if (this.yzm === '') {
 					this.tsShow = '请输入验证码'
 					this.isShow = true
+				} else if (this.pas === '') {
+					this.tsShow = '请输入密码'
+					this.isShow = true
+				} else if (this.pas.length < 6) {
+					this.tsShow = '密码长度为6—16位'
+					this.isShow = true
+					// console.log(this.pas.length)
+				} else if (this.pas.length > 16) {
+					this.tsShow = '密码长度为6—16位'
+					this.isShow = true
+				} else {
+					this.tsShow = ''
+					this.isShow = false
+					if ((/^[0-9A-Za-z]{6,16}$/.test(this.pas))) {
+						this.pwSecurityLevel = 1
+					} else if ((/^(?=.{6,16})[0-9A-Za-z]*[^0-9A-Za-z][0-9A-Za-z]*$/.test(this.pas))) {
+						this.pwSecurityLevel = 2
+					} else if ((/^(?=.{6,16})([0-9A-Za-z]*[^0-9A-Za-z][0-9A-Za-z]*){2,}$/.test(this.pas))) {
+						this.pwSecurityLevel = 3
+					}
+					this.pas = md5(this.pas)
+					this.$http.post(this.resgistUrl, {'mobile': this.telphone, 'pwd': this.pas, 'pwSecurityLevel': this.pwSecurityLevel, 'smsCode': this.yzm, 'invitePhone': this.invitePhone}, {emulateJSON: true})
+						.then((response) => {
+							if (response.body.code === 100000) {
+								this.status = true
+								this.isShow = false
+							} else {
+								this.tsShow = response.body.msg
+								this.isShow = true
+							}
+						})
 				}
+			},
+			check () {
+				let vm = this
+				vm.$http.post(vm.apiUrl, {'mobile': vm.telphone}, {emulateJSON: true})
+					.then((response) => {
+						console.log(response)
+						if (response.body.content.status === 1) {
+							vm.tsShow = '该手机号已注册认证，请直接登录'
+							vm.isShow = true
+							vm.register = false
+						} else {
+							vm.register = true
+							vm.isShow = false
+							if (vm.sendMsgDisabled === false) {
+								vm.send()
+							}
+						}
+					})
 			}
 		}
 	}
@@ -108,12 +162,12 @@
 		width:1.25rem
 		height:.59rem
 		margin:.32rem 0 .25rem .4rem
-		background:url('../../image/logo.png') no-repeat
+		background:url('../../image/invite/logo.png') no-repeat
 		background-size: 100%
 	.hongbao
 		width:6.78rem
 		height:5rem
-		background:url('../../image/hong.png') no-repeat
+		background:url('../../image/invite/hong.png') no-repeat
 		background-size: 100%
 		overflow:hidden
 		position:absolute
@@ -122,7 +176,7 @@
 	.bg-pic
 		width:7.5rem
 		height:5.16rem
-		background:url('../../image/bg.png') no-repeat
+		background:url('../../image/invite/bg.png') no-repeat
 		background-size: 100%
 		overflow:hidden
 	.gg
@@ -134,7 +188,7 @@
 		.lb
 			width:1.16rem
 			height:.76rem
-			background:url('../../image/lb.png') no-repeat
+			background:url('../../image/invite/lb.png') no-repeat
 			background-size: 100%
 			float:left
 		p
@@ -144,7 +198,7 @@
 	.talk
 		width:6.68rem
 		height:1.6rem
-		background:url('../../image/talk.png') no-repeat
+		background:url('../../image/invite/talk.png') no-repeat
 		background-size: 100%
 		margin: 0 auto .5rem auto
 	.wrongs
@@ -178,6 +232,7 @@
 					border-radius:.1rem
 					padding-left:.37rem
 					outline:none
+					color:#777777
 			.anniu
 				width:2.5rem
 				height:.88rem

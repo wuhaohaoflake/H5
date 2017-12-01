@@ -3,13 +3,13 @@
 		<div class="record-top">
 			<div class="left">
 				<dl>
-					<dt><span>12800.00</span>元</dt>
+					<dt><span>{{this.cashBackSum}}</span>元</dt>
 					<dd>返现奖励</dd>
 				</dl>
 			</div>
 			<div class="right">
 				<dl>
-					<dt><span>15800.00</span>元</dt>
+					<dt><span>{{this.voucherSum}}</span>元</dt>
 					<dd>抵用券奖励</dd>
 				</dl>
 			</div>
@@ -19,35 +19,45 @@
 			<table>
 				<tr>
 					<th>好友</th>
-					<th>直接返现金额</th>
-					<th>间接返现金额</th>
+					<th>直接返现奖励</th>
+					<th>间接返现奖励</th>
 				</tr>
-				<tr>
-					<td>180****1498</td>
-					<td>100.00</td>
-					<td>100.00</td>
-				</tr>
-				<tr>
-					<td>180****1498</td>
-					<td>--</td>
-					<td>--</td>
-				</tr>
-				<tr>
-					<td>180****1498</td>
-					<td>200.00</td>
-					<td>--</td>
-				</tr>
-				<tr>
-					<td>180****1498</td>
-					<td>100.00</td>
-					<td>100.00</td>
+				<tr v-for="item in items">
+					<td>{{item.friendPhoneNum}}</td>
+					<td>{{item.directCashback}}</td>
+					<td>{{item.indirectCashback}}</td>
 				</tr>
 			</table>
 		</div>
 		<div class="til">“-”表示未返现</div>
 	</div>
 </template>
-<script type="text/ecmascript-6"></script>
+<script type="text/ecmascript-6">
+	export default{
+		data () {
+			return {
+				apiUrl: 'http://72.127.2.140:8080/api/router/app/h5/invite/appInviteRecord',
+				items: [],
+				cashBackSum: '',
+				voucherSum: ''
+			}
+		},
+		mounted() {
+			this.init()
+		},
+		methods: {
+			init() {
+				let vm = this
+				vm.$http.post(vm.apiUrl)
+					.then((response) => {
+						this.items = response.body.content.recordVOList
+						this.cashBackSum = response.body.content.cashBackSum
+						this.voucherSum = response.body.content.voucherSum
+					})
+			}
+		}
+	}
+</script>
 <style scoped lang="stylus" rel="stylesheet/stylus">
 	@import "~common/stylus/variable"
 	.record
