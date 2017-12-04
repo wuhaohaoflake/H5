@@ -38,7 +38,8 @@
 				isMiddle: false,
 				isKing: false,
 				isOpenDeposit: '',
-				loginStatus: 0
+				accessId: 'accessId',
+				accessKey: 'accessKey'
 			}
 		},
 		mounted() {
@@ -48,30 +49,39 @@
 			init() {
 				let vm = this
 				if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
-					vm.setupWebViewJavascriptBridge(function (bridge) {
-						bridge.callHandler('h5ToNative_GetUserInfo', {}, function (response) {
-							vm.loginStatus = response.status
+					this.setupWebViewJavascriptBridge(function (bridge) {
+						bridge.callHandler('h5ToNative_ShowRightNavItem', {
+							'rightTitle': '邀请记录',
+							'url': 'http://72.127.2.40:8080/#/record'
+						}, function (response) {
 						})
 					})
 				}
-				vm.$http.post(vm.apiUrl)
-					.then((response) => {
-						vm.isOpenDeposit = response.body.content.isOpenDeposit
-						if (vm.loginStatus === 0) {
-							this.isLogin = true
-						} else {
-							if (response.body.content.financialPlannerLevel === 1) {
-								vm.isLow = true
-							} else if (response.body.content.financialPlannerLevel === 2) {
-								vm.isMiddle = true
-							} else if (response.body.content.financialPlannerLevel === 3) {
-								vm.isKing = true
+				if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+					vm.setupWebViewJavascriptBridge(function (bridge) {
+						bridge.callHandler('h5ToNative_GetUserInfo', {}, function (response) {
+							vm.accessId = response.accessId
+							vm.accessKey = response.accessKey
+							if (response.status === '0') {
+								vm.isLogin = true
 							}
-						}
+							vm.$http({url: vm.apiUrl, method: 'POST', headers: {accessId: vm.accessId, accessKey: vm.accessKey}})
+							.then((response) => {
+								vm.isOpenDeposit = response.body.content.isOpenDeposit
+								if (response.body.content.financialPlannerLevel === 1) {
+									vm.isLow = true
+								} else if (response.body.content.financialPlannerLevel === 2) {
+									vm.isMiddle = true
+								} else if (response.body.content.financialPlannerLevel === 3) {
+									vm.isKing = true
+								}
+							})
+						})
 					})
+				}
 			},
 			invite() {
-				if (this.isOpenDeposit === 0) {
+				if (this.isOpenDeposit === 1) {
 					if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
 						this.setupWebViewJavascriptBridge(function (bridge) {
 							bridge.callHandler('h5ToNative_ShowOpenDepositAlert', {}, function (response) {
@@ -79,9 +89,8 @@
 						})
 					}
 				} else {
-					this.$http.post(this.ShareUrl)
+					this.$http({url: this.ShareUrl, method: 'POST', headers: {accessId: this.accessId, accessKey: this.accessKey}})
 						.then((response) => {
-							console.log(response)
 							if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
 								this.setupWebViewJavascriptBridge(function (bridge) {
 									bridge.callHandler('h5ToNative_ShowShareView', {

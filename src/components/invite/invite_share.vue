@@ -57,13 +57,26 @@
 				pwSecurityLevel: '',
 				time: 60,
 				sendMsgDisabled: false,
-				invitePhone: '17557280731',
+				invitePhone: '',
 				apiUrl: 'http://72.127.2.140:8080/api/router/app/loginAbout/mobileState',
 				resgistUrl: 'http://72.127.2.140:8080/api/router/app/h5/invite/register',
 				smsSendUrl: 'http://72.127.2.140:8080/api/router/app/loginAbout/smsSend'
 			}
 		},
+		http: {
+			root: '/',
+			headers: {
+				accessId: 'accessId',
+				accessKey: 'accessKey'
+			}
+		},
+		mounted () {
+			this.init()
+		},
 		methods: {
+			init () {
+				this.invitePhone = window.location.search
+			},
 			telphones () {
 				if (!(/^1[34578]\d{9}$/.test(this.telphone))) {
 					this.tsShow = '请输入正确的手机号码'
